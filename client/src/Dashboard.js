@@ -22,13 +22,7 @@ export default function Dashboard({ code }) {
         if (!accessToken) return
 
         spotifyApi.searchTracks(search).then(res => {
-            setSearchResults(res.body.tracks.items.map(track => {
-                const smallestAlbumImage = track.album.images.reduce((smallest,
-                    image) => {
-                    if (image.height < smallest.height) return image
-                    return smallest
-                }, track.album.images[0])
-
+            res.body.tracks.items.map(track => {
                 return {
                     artist: track.artists[0].name,
                     title: track.name,
@@ -36,7 +30,21 @@ export default function Dashboard({ code }) {
                     albumUrl: smallestAlbumImage.url
                 }
             })
-        )
+            // setSearchResults(res.body.tracks.items.map(track => {
+            //     const smallestAlbumImage = track.album.images.reduce((smallest,
+            //         image) => {
+            //         if (image.height < smallest.height) return image
+            //         return smallest
+            //     }, track.album.images[0])
+
+            //     return {
+            //         artist: track.artists[0].name,
+            //         title: track.name,
+            //         uri: track.uri,
+            //         albumUrl: smallestAlbumImage.url
+            //     }
+            // })
+        // )
         })
 }, [search, accessToken])
 
