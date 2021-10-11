@@ -4,9 +4,10 @@ import useAuth from "./useAuth"
 import TrackSearchResult from "./TrackSearchResult"
 import SpotifyWebApi from "spotify-web-api-node"
 import Player from "./Player"
+import axios from "axios"
 
 const spotifyApi = new SpotifyWebApi({
-    clientId: "b3c4726b31fa49f3a940c64feb001e89",
+    clientId: process.env.CLIENT_ID,
 })
 
 export default function Dashboard({ code }) {
@@ -14,11 +15,26 @@ export default function Dashboard({ code }) {
     const [search, setSearch] = useState("")
     const [searchResults, setSearchResults] = useState([])
     const [playingTrack, setPlayingTrack] = useState()
+    const [lyrics, setLyrics] = useState("")
 
     function chooseTrack(track) {
         setPlayingTrack(track)
         setSearch('')
+        setLyrics('')
     }
+
+    useEffect(() => {
+        if (!playingTrack) return
+
+        axios.get('http://localhost:3001/lyrics', {
+            params: {
+                track: playingTrack.title,
+                artist: playingTrack.artist
+            }
+        }).then(res => {
+            setLyrics(res.data.lyrics)
+        })
+    }, [playingTrack])
 
     useEffect(() => {
         if (!accessToken) return
@@ -55,7 +71,7 @@ return (
     <Container className="d-flex flex-column py-2" style={{ height: "100vh" }}>
         <Form.Control
             type='search'
-            placeholder='Find Your Favorite Songs or Artists'
+            placeholder='Search for Songs or Artists'
             value={search}
             onChange={e => setSearch(e.target.value)}
         />
@@ -63,6 +79,11 @@ return (
             {searchResults.map(track => (
                 <TrackSearchResult track={track} key={track.uri} chooseTrack={chooseTrack} />
             ))}
+            {searchResults.length === 0 && (
+          <div className="text-center" style={{ whiteSpace: "pre" }}>
+            {lyrics}
+          </div>
+        )}
         </div>
         <div><Player accessToken={accessToken} trackUri={playingTrack?.uri} /></div>
     </Container>
